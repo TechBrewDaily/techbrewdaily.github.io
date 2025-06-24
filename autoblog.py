@@ -1,6 +1,5 @@
 # File: autoblog.py
-
-import openai
+from openai import OpenAI
 import os
 import feedparser
 from datetime import datetime
@@ -11,7 +10,10 @@ BLOG_REPO_DIR = os.path.dirname(os.path.abspath(__file__))  # assumes script is 
 BLOG_FOLDER = os.path.join(BLOG_REPO_DIR, "src", "content", "blog")
 
 # Read OpenAI API Key from environment (set in GitHub Actions)
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 
 
 def fetch_trending_topic():
@@ -55,7 +57,7 @@ def generate_blog_from_topic(topic):
     - A short FAQ section at the end if relevant
     """
 
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}]
     )
