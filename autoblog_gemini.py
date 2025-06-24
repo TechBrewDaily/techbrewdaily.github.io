@@ -20,24 +20,25 @@ def generate_blog(topic):
     today = datetime.now().strftime("%Y-%m-%d")
 
     prompt = f"""
-Write a detailed SEO-optimized technical blog in markdown format for Indian readers on the topic:
+Write a detailed SEO-optimized technical blog post in valid markdown format for Indian readers on the topic:
 "{topic}"
 
-Use the following format:
-
+Make sure:
+- All frontmatter is at the top of the post in this exact format:
 ---
 title: "{topic}"
 pubDate: "{today}"
-description: "A short summary under 160 characters about the topic"
+description: "Short summary under 160 characters"
 author: "{AUTHOR}"
 ---
 
-Content:
-- Start with a short 2-line intro.
-- Use clear H2 and H3 headings.
-- Use bullet points where helpful.
-- End with a short FAQ if relevant.
-- Format everything in valid Markdown.
+Then write:
+- A 2-line intro
+- Clear H2 and H3 headings
+- Bullet points where appropriate
+- A short FAQ at the end if applicable
+- Do NOT include triple backticks
+- Use only valid Markdown and YAML syntax
 """
 
     model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
