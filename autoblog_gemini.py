@@ -47,7 +47,7 @@ def generate_blog(topic):
         print(m.name)
 
 
-    model = genai.GenerativeModel(model_name="models/gemini-1.5-pro")  # ✅ stable and supported
+    model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")  # ✅ stable and supported
     response = model.generate_content(prompt)
     return response.text.strip()
 
