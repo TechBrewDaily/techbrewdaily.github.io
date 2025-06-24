@@ -1,0 +1,36 @@
+name: Create and Post Daily Blog with Gemini
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # Every day at 8:30 AM IST
+  workflow_dispatch:
+
+jobs:
+  generate_blog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install google-generativeai feedparser
+
+      - name: Run blog script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python autoblog_gemini.py
+
+      - name: Commit and push
+        run: |
+          git config --global user.name 'AutoBlog Bot'
+          git config --global user.email 'bot@example.com'
+          git add .
+          git commit -m "🤖 Daily blog post" || echo "No changes"
+          git push

@@ -1,95 +1,70 @@
-# File: autoblog.py
-from openai import OpenAI
+# File: autoblog_gemini.py
+
 import os
+import google.generativeai as genai
 import feedparser
 from datetime import datetime
 
-# --- CONFIGURATION ---
-AUTHOR_NAME = "TechBot"
-BLOG_REPO_DIR = os.path.dirname(os.path.abspath(__file__))  # assumes script is in repo root
-BLOG_FOLDER = os.path.join(BLOG_REPO_DIR, "src", "content", "blog")
+# CONFIG
+AUTHOR = "TechBot"
+BLOG_FOLDER = os.path.join("src", "content", "blog")  # for Astro blog
 
-# Read OpenAI API Key from environment (set in GitHub Actions)
-
-
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
+# Set your Gemini API Key (OR use environment variable later)
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 
 def fetch_trending_topic():
-    """
-    Fetches the top trending Indian tech headline from Google News RSS.
-    """
     print("🔍 Fetching trending topic from Google News...")
-    feed_url = "https://news.google.com/rss/search?q=technology+india&hl=en-IN&gl=IN&ceid=IN:en"
-    feed = feedparser.parse(feed_url)
-
-    if not feed.entries:
-        return "Latest Tech Update in India"
-
-    topic = feed.entries[0].title
-    print(f"📰 Topic found: {topic}")
-    return topic
+    feed = feedparser.parse("https://news.google.com/rss/search?q=technology+india&hl=en-IN&gl=IN&ceid=IN:en")
+    return feed.entries[0].title if feed.entries else "Latest Tech News in India"
 
 
-def generate_blog_from_topic(topic):
-    """
-    Uses OpenAI to generate a markdown blog post for the topic.
-    """
-    print("🤖 Generating blog content with OpenAI...")
+def generate_blog(topic):
+    print("🧠 Generating blog with Gemini...")
     today = datetime.now().strftime("%Y-%m-%d")
-
     prompt = f"""
-    Write a detailed, SEO-optimized tech blog post in markdown about "{topic}" for Indian readers.
+    Write a detailed SEO-optimized technical blog in markdown format for Indian readers on the topic:
+    "{topic}"
 
     Format:
     ---
-    title: "Catchy SEO Title"
+    title: "SEO-friendly title"
     pubDate: "{today}"
-    description: "A short summary under 160 characters."
-    author: "{AUTHOR_NAME}"
+    description: "Short summary under 160 characters"
+    author: "{AUTHOR}"
     ---
 
-    Use Markdown. Include:
-    - A 2-line intro
+    Content:
+    - 2-line intro
     - H2 and H3 headings
     - Bullet points
-    - A short FAQ section at the end if relevant
+    - Short FAQ at the end (if relevant)
+    - Use Markdown
     """
 
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return response.choices[0].message.content.strip()
+    model = genai.GenerativeModel("gemini-pro")
+    response = model.generate_content(prompt)
+    return response.text.strip()
 
 
-def save_markdown_file(markdown):
-    """
-    Saves the markdown content to the Astro blog folder.
-    """
-    print("📁 Saving markdown file...")
-    try:
-        title_line = next(line for line in markdown.splitlines() if line.startswith("title:"))
-        title = title_line.split(":", 1)[1].strip().strip('"')
-        filename = title.lower().replace(" ", "-")[:40] + ".md"
-    except:
-        filename = f"post-{datetime.now().strftime('%Y%m%d')}.md"
-
+def save_markdown(markdown):
+    print("💾 Saving blog file...")
     os.makedirs(BLOG_FOLDER, exist_ok=True)
+    today = datetime.now().strftime("%Y%m%d")
+    filename = f"post-{today}.md"
     filepath = os.path.join(BLOG_FOLDER, filename)
 
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(markdown)
 
-    print(f"✅ Blog post saved to: {filepath}")
-    return filename
+    print(f"✅ Blog saved at {filepath}")
+    return filepath
 
 
 def main():
     topic = fetch_trending_topic()
-    markdown = generate_blog_from_topic(topic)
-    save_markdown_file(markdown)
+    blog = generate_blog(topic)
+    save_markdown(blog)
 
 
 if __name__ == "__main__":
