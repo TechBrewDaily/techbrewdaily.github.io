@@ -1,0 +1,73 @@
+# .github/workflows/main.yml
+# This is a SINGLE, UNIFIED workflow for generating, building, committing, and deploying.
+
+name: Generate, Build, and Deploy Daily Blog
+
+on:
+  schedule:
+    # Runs automatically every day at 3:00 AM UTC (8:30 AM IST)
+    - cron: '0 3 * * *'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Set permissions for the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checks out your repository's code
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # Step 2: Generate the new blog post using the Python script
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install google-generativeai feedparser
+      - name: Run blog generation script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python autoblog_gemini.py
+
+      # Step 3: Set up Node.js and build the Astro site to validate the new post
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Use a recent LTS version of Node.js
+          cache: 'npm'
+      - name: Install Node.js dependencies
+        run: npm ci # 'ci' is faster and more reliable for CI/CD
+      - name: Build Astro site
+        run: npm run build # If this fails on the new file, the workflow stops here.
+
+      # Step 4: Commit and push the new blog post (only if the build was successful)
+      - name: Commit and push new blog post
+        run: |
+          git config --global user.name 'AutoBlog Bot'
+          git config --global user.email 'bot@example.com'
+          # Use the PAT to get push permissions
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}
+          git add -A
+          # Use "|| true" to prevent the workflow from failing if there's nothing to commit
+          git commit -m "feat: 🤖 Add daily blog post" || true
+          git push
+
+      # Step 5: Deploy the built site (from the ./dist folder) to GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
