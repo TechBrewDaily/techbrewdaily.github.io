@@ -5,55 +5,57 @@ import google.generativeai as genai
 import feedparser
 from datetime import datetime
 
-# CONFIG
-AUTHOR = "TechBot"
-BLOG_FOLDER = os.path.join("src", "content", "blog")  # for Astro blog
+# CONFIGURATION
+AUTHOR = "AutoBlog Bot"
+BLOG_FOLDER = os.path.join("src", "content", "blog")
 
-# Set your Gemini API Key (OR use environment variable later)
+# Configure Gemini API
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
 
 def fetch_trending_topic():
     print("🔍 Fetching trending topic from Google News...")
     feed = feedparser.parse("https://news.google.com/rss/search?q=technology+india&hl=en-IN&gl=IN&ceid=IN:en")
     return feed.entries[0].title if feed.entries else "Latest Tech News in India"
 
-
 def generate_blog(topic):
-    print("🧠 Generating blog with Gemini...")
-    today = datetime.now().strftime("%Y-%m-%d")
+    print("🧠 Generating blog using Gemini...")
+
+    # Initialize the model
+    model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
+
+    # Prompt WITHOUT frontmatter
     prompt = f"""
-    Write a detailed SEO-optimized technical blog in markdown format for Indian readers on the topic:
-    "{topic}"
+Write a detailed SEO-optimized technical blog article in Markdown format (no frontmatter, just pure content) on the topic:
+"{topic}"
 
-    Format:
-    ---
-    title: "SEO-friendly title"
-    pubDate: "{today}"
-    description: "Short summary under 160 characters"
-    author: "{AUTHOR}"
-    ---
+Instructions:
+- Start with a 2-line intro
+- Use H2 and H3 headings appropriately
+- Include bullet points where relevant
+- End with a short FAQ section
+- Use proper Markdown formatting
+- Keep the tone professional and relevant to Indian tech readers
+- Do not add YAML frontmatter or metadata like title/date/author
+"""
 
-    Content:
-    - 2-line intro
-    - H2 and H3 headings
-    - Bullet points
-    - Short FAQ at the end (if relevant)
-    - Use Markdown
-    """
-
-    print("🔧 Available Models:")
-    for m in genai.list_models():
-        print(m.name)
-
-
-    model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")  # ✅ stable and supported
     response = model.generate_content(prompt)
-    return response.text.strip()
+    markdown_body = response.text.strip()
 
+    # Generate metadata (frontmatter)
+    today = datetime.now().strftime("%Y-%m-%d")
+    frontmatter = f"""---
+title: "{topic.replace('"', "'")}"
+pubDate: "{today}"
+description: "Auto-generated blog on '{topic}' for Indian tech readers."
+author: "{AUTHOR}"
+---
+
+"""
+
+    return frontmatter + markdown_body
 
 def save_markdown(markdown):
-    print("💾 Saving blog file...")
+    print("💾 Saving blog post...")
     os.makedirs(BLOG_FOLDER, exist_ok=True)
     today = datetime.now().strftime("%Y%m%d")
     filename = f"post-{today}.md"
@@ -62,15 +64,13 @@ def save_markdown(markdown):
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(markdown)
 
-    print(f"✅ Blog saved at {filepath}")
+    print(f"✅ Blog saved at: {filepath}")
     return filepath
-
 
 def main():
     topic = fetch_trending_topic()
-    blog = generate_blog(topic)
-    save_markdown(blog)
-
+    markdown = generate_blog(topic)
+    save_markdown(markdown)
 
 if __name__ == "__main__":
     main()
