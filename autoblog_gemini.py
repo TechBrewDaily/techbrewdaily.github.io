@@ -35,15 +35,18 @@ Use valid markdown. No YAML, no triple backticks, no metadata.
     return response.text.strip()
 
 def create_yaml_frontmatter(title, date, description, author):
-    # Ensure quotes are added properly around values
-    frontmatter = f"""---
-title: "{title.replace('"', "'")}"
+    def escape(s):
+        return s.replace('"', "'").replace(':', ' -')  # escape colon inside values
+
+    return f"""---
+title: "{escape(title)}"
 pubDate: "{date}"
-description: "{description.replace('"', "'")}"
+description: "{escape(description)}"
 author: "{author}"
----\n
+---
+
 """
-    return frontmatter
+
 
 def save_markdown(title, blog_content):
     print("💾 Saving blog file...")
