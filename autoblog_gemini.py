@@ -42,7 +42,7 @@ def generate_blog(topic):
     - Use Markdown
     """
 
-    model = genai.GenerativeModel("gemini-pro")
+    model = genai.GenerativeModel(model_name="gemini-pro")
     response = model.generate_content(prompt)
     return response.text.strip()
 
