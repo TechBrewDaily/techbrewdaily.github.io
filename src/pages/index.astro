@@ -2,26 +2,190 @@
 import MainLayout from '../layouts/MainLayout.astro';
 import { getCollection } from 'astro:content';
 import BlogPostCard from '../components/BlogPostCard.astro';
-import '../styles/global.css';
 
-// 1. Get all posts from the 'blog' collection
+// Get all posts from the 'blog' collection
 const allPosts = await getCollection('blog');
 
-// 2. Sort them so the newest post is first
+// Sort them so the newest post is first
 const sortedPosts = allPosts.sort(
     (a, b) => new Date(b.data.pubDate).valueOf() - new Date(a.data.pubDate).valueOf()
 );
----
-<MainLayout 
-    title="TechBrew Daily - Your Daily Tech News" 
-    description="The latest news, reviews, and insights in the world of technology, gadgets, and AI."
->
-    <h1 class="text-4xl font-bold mb-8 text-cyan-400">Latest Posts</h1>
 
-    <!-- 3. Create a list and loop through the sorted posts -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sortedPosts.map(post => (
-            <BlogPostCard post={post} />
-        ))}
-    </div>
+// Get featured posts (first 3)
+const featuredPosts = sortedPosts.slice(0, 3);
+const recentPosts = sortedPosts.slice(3, 9);
+---
+
+<MainLayout 
+    title="Your Daily Tech News & Insights" 
+    description="Stay updated with the latest technology trends, AI developments, and tech reviews. Your daily brew of what matters in the tech world."
+>
+    <!-- Hero Section -->
+    <section class="relative py-20 lg:py-32 overflow-hidden">
+        <!-- Hero Background -->
+        <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 rounded-3xl"></div>
+        
+        <div class="relative max-w-4xl mx-auto text-center px-4">
+            <div class="animate-fade-in-up">
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold mb-6">
+                    <span class="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+                        TechBrew Daily
+                    </span>
+                </h1>
+                <p class="text-xl md:text-2xl text-slate-400 mb-8 max-w-3xl mx-auto leading-relaxed">
+                    Your daily brew of the latest in <span class="text-cyan-400 font-semibold">technology</span>, 
+                    <span class="text-blue-400 font-semibold">AI innovations</span>, and 
+                    <span class="text-purple-400 font-semibold">digital trends</span>
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <a href="/blog/" class="btn-primary inline-flex items-center space-x-2">
+                        <span>Explore Articles</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                        </svg>
+                    </a>
+                    <button class="btn-secondary inline-flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5-5-5h5v-6h5v6z"/>
+                        </svg>
+                        <span>Subscribe to Newsletter</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Posts Section -->
+    <section class="py-16">
+        <div class="mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">
+                <span class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                    Featured Stories
+                </span>
+            </h2>
+            <p class="text-slate-400 text-center max-w-2xl mx-auto">
+                Discover the most impactful stories shaping the tech landscape today
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+            {featuredPosts.map((post, index) => (
+                <div class={`animate-fade-in-up ${index === 0 ? 'lg:col-span-2 lg:row-span-2' : ''}`} 
+                     style={`animation-delay: ${index * 0.1}s`}>
+                    <BlogPostCard post={post} featured={index === 0} />
+                </div>
+            ))}
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-16 bg-gradient-to-r from-slate-800/50 to-slate-700/50 rounded-3xl mb-16">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div class="animate-fade-in">
+                <div class="text-4xl font-bold text-cyan-400 mb-2">50K+</div>
+                <div class="text-slate-400">Monthly Readers</div>
+            </div>
+            <div class="animate-fade-in" style="animation-delay: 0.1s">
+                <div class="text-4xl font-bold text-blue-400 mb-2">200+</div>
+                <div class="text-slate-400">Articles Published</div>
+            </div>
+            <div class="animate-fade-in" style="animation-delay: 0.2s">
+                <div class="text-4xl font-bold text-purple-400 mb-2">24/7</div>
+                <div class="text-slate-400">Tech Coverage</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Posts Section -->
+    <section class="py-16">
+        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-12">
+            <div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                    <span class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                        Latest Updates
+                    </span>
+                </h2>
+                <p class="text-slate-400 max-w-2xl">
+                    Stay current with our newest insights and analysis
+                </p>
+            </div>
+            <a href="/blog/" class="btn-secondary mt-4 md:mt-0 self-start">
+                View All Posts
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {recentPosts.map((post, index) => (
+                <div class="animate-fade-in-up" style={`animation-delay: ${index * 0.05}s`}>
+                    <BlogPostCard post={post} />
+                </div>
+            ))}
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="py-20 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 rounded-3xl text-center">
+        <div class="max-w-2xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                Never Miss a Beat
+            </h2>
+            <p class="text-slate-400 mb-8 text-lg">
+                Get the latest tech news, reviews, and insights delivered directly to your inbox
+            </p>
+            <form class="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+                <input 
+                    type="email" 
+                    placeholder="Enter your email"
+                    class="flex-1 px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+                    required
+                />
+                <button type="submit" class="btn-primary whitespace-nowrap">
+                    Subscribe
+                </button>
+            </form>
+            <p class="text-xs text-slate-500 mt-4">
+                No spam, unsubscribe at any time. We respect your privacy.
+            </p>
+        </div>
+    </section>
+
+    <!-- Ad Space Placeholder -->
+    <section class="py-8">
+        <div class="bg-slate-800/30 border-2 border-dashed border-slate-700 rounded-xl p-8 text-center">
+            <div class="text-slate-500 mb-2">
+                <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 2v12a1 1 0 001 1h8a1 1 0 001 1V6M9 8h6"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-slate-400 mb-2">Advertisement Space</h3>
+            <p class="text-sm text-slate-500">Premium ad placement (728x90)</p>
+        </div>
+    </section>
 </MainLayout>
+
+<style>
+    /* Custom animations */
+    .animate-fade-in-up {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+    
+    .animate-fade-in {
+        opacity: 0;
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+    
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeIn {
+        to {
+            opacity: 1;
+        }
+    }
+</style>

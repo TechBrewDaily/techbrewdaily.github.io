@@ -1,41 +1,236 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import '../styles/global.css';
 
 interface Props {
-	title: string;
-	description: string;
+    title: string;
+    description: string;
+    image?: string;
 }
 
-const { title, description } = Astro.props;
+const { title, description, image } = Astro.props;
 const siteTitle = "TechBrew Daily";
+const fullTitle = `${title} | ${siteTitle}`;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const defaultImage = `${Astro.site}images/og-default.jpg`;
 ---
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}/favicon.svg`} />
-		<title>{title} | {siteTitle}</title>
-		<meta name="description" content={description} />
-		<!-- Google Fonts for a professional look -->
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
-	</head>
-	<body class="bg-slate-900 text-slate-300 font-sans">
-		<Header />
-		<main class="max-w-7xl mx-auto px-4 py-10">
-			<slot />
-		</main>
-		<Footer />
-	</body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+        
+        <!-- Primary Meta Tags -->
+        <title>{fullTitle}</title>
+        <meta name="title" content={fullTitle} />
+        <meta name="description" content={description} />
+        <meta name="generator" content={Astro.generator} />
+        
+        <!-- Canonical URL -->
+        <link rel="canonical" href={canonicalURL} />
+        
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={canonicalURL} />
+        <meta property="og:title" content={fullTitle} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={image || defaultImage} />
+        <meta property="og:site_name" content={siteTitle} />
+        
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={canonicalURL} />
+        <meta property="twitter:title" content={fullTitle} />
+        <meta property="twitter:description" content={description} />
+        <meta property="twitter:image" content={image || defaultImage} />
+        
+        <!-- RSS Feed -->
+        <link rel="alternate" type="application/rss+xml" title={siteTitle} href={`${Astro.site}rss.xml`} />
+        
+        <!-- Preload fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+        
+        <!-- Theme color -->
+        <meta name="theme-color" content="#0f172a" />
+        <meta name="color-scheme" content="dark" />
+        
+        <!-- Structured Data -->
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "TechBrew Daily",
+            "description": "Your daily brew of the latest in tech, gadgets, and AI",
+            "url": "https://techbrewdaily.github.io/",
+            "publisher": {
+                "@type": "Organization",
+                "name": "TechBrew Daily"
+            }
+        }
+        </script>
+        
+        <!-- Performance optimization -->
+        <script>
+            // Preload critical resources
+            document.addEventListener('DOMContentLoaded', () => {
+                // Initialize any necessary features
+                const loadingIndicator = document.getElementById('loading-indicator');
+                
+                // Show loading indicator for navigation
+                window.addEventListener('beforeunload', () => {
+                    if (loadingIndicator) {
+                        loadingIndicator.classList.remove('hidden');
+                    }
+                });
+                
+                // Hide loading indicator when page loads
+                window.addEventListener('load', () => {
+                    if (loadingIndicator) {
+                        loadingIndicator.classList.add('hidden');
+                    }
+                });
+            });
+        </script>
+    </head>
+    
+    <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+        <!-- Background gradient -->
+        <div class="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pointer-events-none"></div>
+        
+        <!-- Background pattern -->
+        <div class="fixed inset-0 opacity-30 pointer-events-none" style="background-image: radial-gradient(circle at 1px 1px, rgba(51, 65, 85, 0.15) 1px, transparent 0); background-size: 20px 20px;"></div>
+        
+        <div class="relative z-10 flex flex-col min-h-screen">
+            <Header />
+            
+            <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+                <slot />
+            </main>
+            
+            <Footer />
+        </div>
+        
+        <!-- Loading indicator -->
+        <div id="loading-indicator" class="fixed top-4 right-4 hidden z-50">
+            <div class="bg-cyan-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2">
+                <div class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                <span class="text-sm font-medium">Loading...</span>
+            </div>
+        </div>
+        
+        <!-- Back to top button -->
+        <button 
+            id="back-to-top" 
+            class="fixed bottom-8 right-8 bg-cyan-500 hover:bg-cyan-600 text-white p-3 rounded-full shadow-lg transition-all duration-300 transform translate-y-16 opacity-0 z-40"
+            aria-label="Back to top"
+        >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+            </svg>
+        </button>
+        
+        <!-- Progressive enhancement script -->
+        <script is:inline>
+            // Back to top functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const backToTopButton = document.getElementById('back-to-top');
+                
+                if (backToTopButton) {
+                    // Show/hide back to top button
+                    window.addEventListener('scroll', function() {
+                        if (window.pageYOffset > 300) {
+                            backToTopButton.style.transform = 'translateY(0)';
+                            backToTopButton.style.opacity = '1';
+                        } else {
+                            backToTopButton.style.transform = 'translateY(16px)';
+                            backToTopButton.style.opacity = '0';
+                        }
+                    });
+                    
+                    // Smooth scroll to top
+                    backToTopButton.addEventListener('click', function() {
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    });
+                }
+                
+                // Add loading states for external links
+                const externalLinks = document.querySelectorAll('a[href^="http"]:not([href*="' + location.hostname + '"])');
+                const loadingIndicator = document.getElementById('loading-indicator');
+                
+                externalLinks.forEach(function(link) {
+                    link.addEventListener('click', function() {
+                        if (loadingIndicator) {
+                            loadingIndicator.classList.remove('hidden');
+                            setTimeout(function() {
+                                loadingIndicator.classList.add('hidden');
+                            }, 3000);
+                        }
+                    });
+                });
+            });
+        </script>
+    </body>
 </html>
+
 <style is:global>
-	:root {
-		color-scheme: dark;
-	}
-	body {
-		font-family: 'Inter', sans-serif;
-	}
+    :root {
+        color-scheme: dark;
+    }
+    
+    html {
+        font-family: 'Inter', system-ui, sans-serif;
+    }
+    
+    body {
+        font-family: 'Inter', system-ui, sans-serif;
+    }
+    
+    /* Smooth scrolling */
+    @media (prefers-reduced-motion: no-preference) {
+        html {
+            scroll-behavior: smooth;
+        }
+    }
+    
+    /* Focus styles */
+    *:focus-visible {
+        outline: 2px solid rgb(6 182 212);
+        outline-offset: 2px;
+    }
+    
+    /* Loading animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgb(30 41 59);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: rgb(71 85 105);
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgb(100 116 139);
+    }
 </style>

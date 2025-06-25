@@ -7,19 +7,246 @@ const allPosts = await getCollection('blog');
 const sortedPosts = allPosts.sort(
     (a, b) => new Date(b.data.pubDate).valueOf() - new Date(a.data.pubDate).valueOf()
 );
----
-<MainLayout 
-    title="Home" 
-    description="Your daily brew of the latest in tech, gadgets, and AI."
->
-    <div class="text-center mb-12">
-        <h1 class="text-5xl font-bold text-slate-100">TechBrew Daily</h1>
-        <p class="text-lg text-slate-400 mt-2">Your daily digest of what matters in tech.</p>
-    </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {sortedPosts.map(post => (
-            <BlogPostCard post={post} />
-        ))}
-    </div>
+// Pagination setup (for future implementation)
+const postsPerPage = 12;
+const totalPages = Math.ceil(sortedPosts.length / postsPerPage);
+const currentPage = 1;
+const paginatedPosts = sortedPosts.slice(0, postsPerPage);
+---
+
+<MainLayout 
+    title="All Blog Posts" 
+    description="Explore all our technology articles, reviews, and insights. Stay updated with the latest in tech, AI, and digital innovation."
+>
+    <!-- Header Section -->
+    <section class="py-12 mb-16">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+                <span class="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+                    Tech Insights & Analysis
+                </span>
+            </h1>
+            <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-8">
+                Dive deep into the world of technology with our comprehensive articles, expert reviews, and latest industry trends
+            </p>
+            
+            <!-- Stats -->
+            <div class="flex flex-wrap justify-center gap-8 text-center">
+                <div class="bg-slate-800/50 rounded-xl p-4 min-w-[120px]">
+                    <div class="text-2xl font-bold text-cyan-400">{sortedPosts.length}</div>
+                    <div class="text-sm text-slate-400">Articles</div>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-4 min-w-[120px]">
+                    <div class="text-2xl font-bold text-blue-400">5</div>
+                    <div class="text-sm text-slate-400">Categories</div>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-4 min-w-[120px]">
+                    <div class="text-2xl font-bold text-purple-400">50K+</div>
+                    <div class="text-sm text-slate-400">Readers</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters Section -->
+    <section class="mb-12">
+        <div class="flex flex-wrap gap-4 justify-center">
+            <button class="filter-btn active" data-category="all">
+                All Posts
+            </button>
+            <button class="filter-btn" data-category="ai">
+                AI & Machine Learning
+            </button>
+            <button class="filter-btn" data-category="web">
+                Web Development
+            </button>
+            <button class="filter-btn" data-category="mobile">
+                Mobile Tech
+            </button>
+            <button class="filter-btn" data-category="reviews">
+                Reviews
+            </button>
+            <button class="filter-btn" data-category="news">
+                Tech News
+            </button>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="mb-16">
+        <div class="max-w-md mx-auto">
+            <div class="relative">
+                <input 
+                    type="text" 
+                    placeholder="Search articles..."
+                    class="w-full px-4 py-3 pl-12 rounded-xl bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all"
+                    id="search-input"
+                />
+                <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Posts Grid -->
+    <section class="mb-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="posts-grid">
+            {paginatedPosts.map((post, index) => (
+                <div class="animate-fade-in-up post-item" style={`animation-delay: ${index * 0.05}s`} data-category="all">
+                    <BlogPostCard post={post} />
+                </div>
+            ))}
+        </div>
+        
+        <!-- No results message -->
+        <div id="no-results" class="hidden text-center py-16">
+            <svg class="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-1.009-5.824-2.562M15 9.34c-.665-.295-1.405-.034-1.405-.034A5.5 5.5 0 009.5 12.5c0 1.381.559 2.628 1.462 3.535"/>
+            </svg>
+            <h3 class="text-xl font-semibold text-slate-400 mb-2">No articles found</h3>
+            <p class="text-slate-500">Try adjusting your search or filter criteria</p>
+        </div>
+    </section>
+
+    <!-- Pagination -->
+    {totalPages > 1 && (
+        <section class="text-center">
+            <nav class="inline-flex items-center space-x-2">
+                <button class="px-4 py-2 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 hover:text-slate-300 transition-colors disabled:opacity-50" disabled>
+                    Previous
+                </button>
+                
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map(page => (
+                    <button class={`px-4 py-2 rounded-lg transition-colors ${
+                        page === currentPage 
+                            ? 'bg-cyan-500 text-white' 
+                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300'
+                    }`}>
+                        {page}
+                    </button>
+                ))}
+                
+                <button class="px-4 py-2 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 hover:text-slate-300 transition-colors">
+                    Next
+                </button>
+            </nav>
+        </section>
+    )}
+
+    <!-- Newsletter CTA -->
+    <section class="py-20 mt-20 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 rounded-3xl text-center">
+        <div class="max-w-2xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                Stay Updated
+            </h2>
+            <p class="text-slate-400 mb-8 text-lg">
+                Get notified when we publish new articles and insights
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+                <input 
+                    type="email" 
+                    placeholder="Enter your email"
+                    class="flex-1 px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+                />
+                <button class="btn-primary whitespace-nowrap">
+                    Subscribe
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ad Space Placeholder -->
+    <section class="py-8 mt-16">
+        <div class="bg-slate-800/30 border-2 border-dashed border-slate-700 rounded-xl p-8 text-center">
+            <div class="text-slate-500 mb-2">
+                <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 2v12a1 1 0 001 1h8a1 1 0 001 1V6M9 8h6"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-slate-400 mb-2">Advertisement Space</h3>
+            <p class="text-sm text-slate-500">Leaderboard ad placement (728x90)</p>
+        </div>
+    </section>
 </MainLayout>
+
+<style>
+    .filter-btn {
+        @apply px-4 py-2 rounded-full bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300 transition-all duration-200 border border-slate-700;
+    }
+    
+    .filter-btn.active {
+        @apply bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-transparent;
+    }
+    
+    .animate-fade-in-up {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+    
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<script>
+    // Search functionality
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const postsGrid = document.getElementById('posts-grid') as HTMLElement;
+    const noResults = document.getElementById('no-results') as HTMLElement;
+    const filterButtons = document.querySelectorAll('.filter-btn') as NodeListOf<HTMLButtonElement>;
+    
+    let currentFilter = 'all';
+    
+    // Filter posts function
+    function filterPosts() {
+        if (!searchInput || !postsGrid || !noResults) return;
+        
+        const searchTerm = searchInput.value.toLowerCase();
+        const posts = postsGrid.querySelectorAll('.post-item') as NodeListOf<HTMLElement>;
+        let visibleCount = 0;
+        
+        posts.forEach(post => {
+            const title = post.textContent?.toLowerCase() || '';
+            const matchesSearch = !searchTerm || title.includes(searchTerm);
+            const matchesCategory = currentFilter === 'all' || post.getAttribute('data-category') === currentFilter;
+            
+            if (matchesSearch && matchesCategory) {
+                post.style.display = 'block';
+                visibleCount++;
+            } else {
+                post.style.display = 'none';
+            }
+        });
+        
+        // Show/hide no results message
+        if (visibleCount === 0) {
+            noResults.classList.remove('hidden');
+        } else {
+            noResults.classList.add('hidden');
+        }
+    }
+    
+    // Search input handler
+    searchInput?.addEventListener('input', filterPosts);
+    
+    // Filter button handlers
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Update active state
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            // Update current filter
+            currentFilter = button.getAttribute('data-category') || 'all';
+            
+            // Filter posts
+            filterPosts();
+        });
+    });
+</script>
