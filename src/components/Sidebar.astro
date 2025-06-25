@@ -2,21 +2,21 @@
 import { getCollection } from 'astro:content';
 
 interface Props {
-    currentPostSlug?: string;
+    currentPostId?: string;
 }
-const { currentPostSlug } = Astro.props;
+const { currentPostId } = Astro.props;
 
 const allPosts = await getCollection('blog');
-// Filter out the current post from the "Recent" list
+// ✅ FIX: Filter using 'id' instead of 'slug'
 const recentPosts = allPosts
-    .filter(p => p.id !== currentPostSlug)
+    .filter(p => p.id !== currentPostId)
     .sort((a, b) => new Date(b.data.pubDate).valueOf() - new Date(a.data.pubDate).valueOf())
     .slice(0, 5);
 ---
 
 <div class="space-y-6">
     <!-- Table of Contents (if on post page) -->
-    {currentPostSlug && (
+    {currentPostId && (
         <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
             <h3 class="font-bold text-lg text-slate-200 mb-4 flex items-center">
                 <svg class="w-5 h-5 mr-2 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,7 +47,8 @@ const recentPosts = allPosts
         <div class="space-y-4">
             {recentPosts.map(post => (
                 <article class="group">
-                    <a href={`${import.meta.env.BASE_URL}/blog/${post.id}`} class="block">
+                    <!-- ✅ FIX: Use 'id' for recent post links -->
+                    <a href={`/blog/${post.id}/`} class="block">
                         <div class="flex space-x-3">
                             {(post.data.heroImage || post.data.image) && (
                                 <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">

@@ -1,18 +1,24 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import Sidebar from '../../components/Sidebar.astro';
-import { getCollection, type CollectionEntry, render } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
     const posts = await getCollection('blog');
     return posts.map(post => ({
+        // ✅ FIX: Use 'id' for URL params
         params: { slug: post.id },
-        props: post,
+        props: { post },  // Pass the full post object
     }));
 }
 
-type Props = CollectionEntry<'blog'>;
-const post = Astro.props;
+type Props = {
+    post: any;
+};
+
+const { post } = Astro.props;
+
+// ✅ FIX: Use the render function from astro:content
 const { Content } = await render(post);
 
 // Format date
@@ -193,7 +199,8 @@ const readingTime = Math.max(1, Math.ceil((post.body?.length || 1500) / 1000));
             <!-- Sidebar -->
             <aside class="lg:col-span-1">
                 <div class="sticky top-24 space-y-8">
-                    <Sidebar currentPostSlug={post.id} />
+                    <!-- ✅ FIX: Use 'id' for sidebar -->
+                    <Sidebar currentPostId={post.id} />
                     
                     <!-- Ad Space -->
                     <div class="bg-slate-800/30 border-2 border-dashed border-slate-700 rounded-xl p-6 text-center">

@@ -8,7 +8,8 @@ const currentPath = Astro.url.pathname;
         <div class="flex justify-between items-center h-16">
             <!-- Logo -->
             <div class="flex items-center">
-                <a href={import.meta.env.BASE_URL || '/'} class="flex items-center space-x-2 group">
+                <!-- ✅ FIX: Simplified logo link -->
+                <a href="/" class="flex items-center space-x-2 group">
                     <div class="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                         <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
@@ -22,15 +23,16 @@ const currentPath = Astro.url.pathname;
 
             <!-- Navigation Links -->
             <div class="hidden md:flex items-center space-x-8">
-                <a href={import.meta.env.BASE_URL || '/'} 
+                <!-- ✅ FIX: Simplified navigation links -->
+                <a href="/" 
                    class={`nav-link ${currentPath === '/' ? 'active' : ''}`}>
                     Home
                 </a>
-                <a href={`${import.meta.env.BASE_URL}/blog/`} 
+                <a href="/blog/" 
                    class={`nav-link ${currentPath.startsWith('/blog') ? 'active' : ''}`}>
                     Blog
                 </a>
-                <a href={`${import.meta.env.BASE_URL}/about/`} 
+                <a href="/about/" 
                    class={`nav-link ${currentPath === '/about/' ? 'active' : ''}`}>
                     About
                 </a>
@@ -78,9 +80,10 @@ const currentPath = Astro.url.pathname;
         <!-- Mobile Menu -->
         <div class="md:hidden hidden" id="mobile-menu">
             <div class="px-2 pt-2 pb-3 space-y-1 border-t border-slate-800">
-                <a href={import.meta.env.BASE_URL || '/'} class="mobile-nav-link">Home</a>
-                <a href={`${import.meta.env.BASE_URL}/blog/`} class="mobile-nav-link">Blog</a>
-                <a href={`${import.meta.env.BASE_URL}/about/`} class="mobile-nav-link">About</a>
+                <!-- ✅ FIX: Simplified mobile menu links -->
+                <a href="/" class="mobile-nav-link">Home</a>
+                <a href="/blog/" class="mobile-nav-link">Blog</a>
+                <a href="/about/" class="mobile-nav-link">About</a>
                 <div class="px-3 py-2">
                     <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Categories</p>
                     <div class="mt-2 space-y-1">
