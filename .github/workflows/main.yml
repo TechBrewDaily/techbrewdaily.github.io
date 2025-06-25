@@ -38,16 +38,22 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python autoblog_gemini.py
 
-      # Step 3: Set up Node.js and build the Astro site to validate the new post
+      # Step 3: Set up Node.js and pnpm, then build the Astro site to validate the new post
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20' # Use a recent LTS version of Node.js
-          cache: 'npm'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+          
       - name: Install Node.js dependencies
-        run: npm ci # 'ci' is faster and more reliable for CI/CD
+        run: pnpm install --frozen-lockfile # Use pnpm instead of npm
+        
       - name: Build Astro site
-        run: npm run build # If this fails on the new file, the workflow stops here.
+        run: pnpm run build # If this fails on the new file, the workflow stops here.
 
       # Step 4: Commit and push the new blog post (only if the build was successful)
       - name: Commit and push new blog post
