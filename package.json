@@ -9,11 +9,22 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.4",
     "@astrojs/mdx": "^4.3.0",
     "@astrojs/rss": "^4.0.12",
     "@astrojs/sitemap": "^3.4.1",
+    "@astrojs/tailwind": "^6.0.2",
+    "@tailwindcss/typography": "^0.5.16",
+    "@tailwindcss/vite": "^4.1.10",
     "astro": "^5.10.1",
-    "sharp": "^0.34.2"
+    "sharp": "^0.34.2",
+    "typescript": "^5.8.3"
   },
-  "homepage": "https://jainhardik06.github.io/astro-blog-techbrewdaily/"
+  "homepage": "https://jainhardik06.github.io/astro-blog-techbrewdaily/",
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.10",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17"
+  }
 }

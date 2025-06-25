@@ -1,0 +1,38 @@
+---
+import { getCollection } from 'astro:content';
+
+interface Props {
+    currentPostSlug?: string;
+}
+const { currentPostSlug } = Astro.props;
+
+const allPosts = await getCollection('blog');
+// Filter out the current post from the "Recent" list
+const recentPosts = allPosts
+    .filter(p => p.id !== currentPostSlug)
+    .sort((a, b) => new Date(b.data.pubDate).valueOf() - new Date(a.data.pubDate).valueOf())
+    .slice(0, 5);
+---
+<div class="space-y-8">
+    <!-- Future Ad Unit -->
+    <div class="bg-slate-800/50 p-6 rounded-lg border border-slate-800 text-center">
+        <h3 class="font-bold text-xs text-slate-500 uppercase tracking-widest mb-4">Advertisement</h3>
+        <div class="bg-slate-700 w-full h-60 rounded flex items-center justify-center">
+            <span class="text-slate-500">Ad Slot (300x250)</span>
+        </div>
+    </div>
+
+    <!-- Recent Posts -->
+    <div class="bg-slate-800/50 p-6 rounded-lg border border-slate-800">
+        <h3 class="font-bold text-xs text-slate-500 uppercase tracking-widest mb-4">Recent Posts</h3>
+        <ul class="space-y-3">
+            {recentPosts.map(post => (
+                <li>
+                    <a href={`${import.meta.env.BASE_URL}/blog/${post.id}`} class="font-medium text-slate-300 hover:text-cyan-400 transition-colors">
+                        {post.data.title}
+                    </a>
+                </li>
+            ))}
+        </ul>
+    </div>
+</div>

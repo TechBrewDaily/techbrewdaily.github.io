@@ -1,0 +1,21 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+}
+const { post } = Astro.props;
+---
+<a href={`${import.meta.env.BASE_URL}/blog/${post.id}`} class="group block bg-slate-800 rounded-lg overflow-hidden shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 hover:-translate-y-1">
+    {(post.data.heroImage || post.data.image) && (
+        <img 
+            src={post.data.heroImage?.src || post.data.image?.url} 
+            alt={post.data.image?.alt || post.data.title}
+            class="w-full h-40 object-cover group-hover:opacity-90 transition-opacity"
+        />
+    )}
+    <div class="p-6">
+        <h2 class="font-bold text-lg text-slate-100 mb-2 group-hover:text-cyan-400 transition-colors">{post.data.title}</h2>
+        <p class="text-slate-400 text-sm leading-relaxed">{post.data.description}</p>
+    </div>
+</a>
