@@ -3,7 +3,7 @@ from src.config import settings
 from datetime import datetime
 
 def write_blog_post(topic: str, category_obj: dict) -> str | None:
-    """Generates a full blog post with frontmatter and image placeholders."""
+    """Generates a full blog post with frontmatter (no image placeholders)."""
     print(f"✍️  Writing post for '{topic}'...")
     
     try:
@@ -22,15 +22,14 @@ def write_blog_post(topic: str, category_obj: dict) -> str | None:
             - category: "{category_obj['name']}"
             - tags: {str([category_obj['slug']] + category_obj['keywords'][:4])}
             - image:
-                url: "[IMAGE_URL_PLACEHOLDER]"
+                url: "/images/posts/placeholder.png"
                 alt: "A descriptive alt text for the main hero image, related to '{topic.replace('"', "'")}'"
         2.  **Content:**
             - Write an engaging introduction.
             - Use at least 3-4 H2 (##) headings.
             - Total word count: 800-1000 words.
             - Tone: Knowledgeable, engaging, and slightly informal.
-        3.  **Image Placeholders:** CRITICAL. Where a secondary picture would be effective (e.g., within 1-2 relevant sections), insert a placeholder in this exact format:
-            `[IMAGE: A detailed, descriptive prompt for an AI image generator.]`
+        3.  **No Image Placeholders:** Do not include any image placeholders in the content body.
         4.  **Conclusion:** End with a strong summary.
         
         Respond with the complete markdown file content and nothing else.

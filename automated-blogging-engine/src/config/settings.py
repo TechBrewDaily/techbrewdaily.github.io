@@ -7,7 +7,7 @@ load_dotenv()
 # --- API KEYS ---
 GEMINI_API_KEY_TOPICS = os.getenv("GEMINI_API_KEY_1")
 GEMINI_API_KEY_CONTENT = os.getenv("GEMINI_API_KEY_2")
-GEMINI_API_KEY_IMAGES = os.getenv("GEMINI_API_KEY_3")
+# Removed image API key since we're not using images
 
 # --- PATHS ---
 # Use an environment variable for the path in production (GitHub Actions),
@@ -23,8 +23,6 @@ ASTRO_PROJECT_PATH = os.path.join(
 
 # Paths within the Astro project
 POSTS_PATH = os.path.join(ASTRO_PROJECT_PATH, "src", "content", "blog")
-IMAGE_SAVE_PATH = os.path.join(ASTRO_PROJECT_PATH, "public", "images", "posts")
-IMAGE_PUBLIC_PATH = "/images/posts"  # URL path used in markdown
 USED_TOPICS_FILE = os.path.join(ASTRO_PROJECT_PATH, "used_topics.txt")
 
 # --- BLOG DEFAULTS ---
