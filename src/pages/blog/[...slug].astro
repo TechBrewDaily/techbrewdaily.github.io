@@ -2,6 +2,7 @@
 import MainLayout from '../../layouts/MainLayout.astro';
 import Sidebar from '../../components/Sidebar.astro';
 import { getCollection, render } from 'astro:content';
+import { CATEGORIES } from '../../consts';
 
 export async function getStaticPaths() {
     const posts = await getCollection('blog');
@@ -30,20 +31,43 @@ const formattedDate = post.data.pubDate.toLocaleDateString('en-US', {
 
 // Calculate reading time
 const readingTime = Math.max(1, Math.ceil((post.body?.length || 1500) / 1000));
+
+// Get category info
+const categoryInfo = CATEGORIES.find(c => c.name === (post.data.category || 'Technology')) || CATEGORIES[0];
+
+// Handle image sources consistently
+const getImageSrc = () => {
+    if (post.data.image?.url) return post.data.image.url;
+    if (typeof post.data.heroImage === 'string') return post.data.heroImage;
+    if (post.data.heroImage?.src) return post.data.heroImage.src;
+    return null;
+};
+
+const imageSrc = getImageSrc();
+const imageAlt = post.data.image?.alt || post.data.title;
 ---
 
 <MainLayout title={post.data.title} description={post.data.description}>
     <!-- Article Header -->
     <article class="max-w-4xl mx-auto">
         <!-- Hero Image -->
-        {(post.data.heroImage || post.data.image) && (
+        {imageSrc ? (
             <div class="relative mb-8 rounded-2xl overflow-hidden">
                 <img 
-                    src={post.data.heroImage?.src || post.data.image?.url} 
-                    alt={post.data.image?.alt || post.data.title} 
+                    src={imageSrc} 
+                    alt={imageAlt} 
                     class="w-full h-64 md:h-96 object-cover"
                 />
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
+            </div>
+        ) : (
+            <!-- Fallback hero image -->
+            <div class="relative mb-8 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 h-64 md:h-96 flex items-center justify-center">
+                <div class="text-center">
+                    <div class="text-6xl mb-4">{categoryInfo?.emoji ?? '📱'}</div>
+                    <div class="text-cyan-400 font-semibold text-xl">TechBrew Daily</div>
+                    <div class="text-slate-400 text-lg mt-2">{categoryInfo?.name ?? 'Technology'}</div>
+                </div>
             </div>
         )}
         
@@ -59,13 +83,17 @@ const readingTime = Math.max(1, Math.ceil((post.body?.length || 1500) / 1000));
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
-                <span class="text-slate-500">{post.data.title}</span>
+                <a href={`/category/${categoryInfo?.slug ?? 'technology'}/`} class="hover:text-cyan-400 transition-colors">{categoryInfo?.name ?? 'Technology'}</a>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+                <span class="text-slate-500 truncate">{post.data.title}</span>
             </nav>
             
             <!-- Category Badge -->
             <div class="flex items-center space-x-4 mb-6">
                 <span class="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
-                    Technology
+                  {categoryInfo?.emoji ?? '📱'} {categoryInfo?.name ?? 'Technology'}
                 </span>
                 <div class="flex items-center space-x-2 text-sm text-slate-400">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +118,7 @@ const readingTime = Math.max(1, Math.ceil((post.body?.length || 1500) / 1000));
                     </div>
                     <div>
                         <div class="text-slate-200 font-semibold">
-                            {post.data.author || 'TechBot'}
+                            {post.data.author || 'TechBrew Daily'}
                         </div>
                         <div class="text-slate-400 text-sm">
                             Published on {formattedDate}
@@ -144,35 +172,16 @@ const readingTime = Math.max(1, Math.ceil((post.body?.length || 1500) / 1000));
                 <!-- Article Footer -->
                 <div class="mt-12 pt-8 border-t border-slate-700">
                     <!-- Tags -->
-                    <div class="mb-8">
-                        <h3 class="text-lg font-semibold text-slate-200 mb-4">Tags</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="tag">Technology</span>
-                            <span class="tag">AI</span>
-                            <span class="tag">Innovation</span>
-                            <span class="tag">Future</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Author Bio -->
-                    <div class="bg-gradient-to-r from-slate-800/50 to-slate-700/50 rounded-xl p-6 mb-8">
-                        <div class="flex items-start space-x-4">
-                            <div class="w-16 h-16 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4 class="text-lg font-semibold text-slate-200 mb-2">
-                                    {post.data.author || 'TechBot'}
-                                </h4>
-                                <p class="text-slate-400 leading-relaxed">
-                                    AI-powered content creator specializing in technology trends, innovations, and digital transformation. 
-                                    Bringing you the latest insights from the tech world with analysis and expert perspectives.
-                                </p>
+                    {post.data.tags && post.data.tags.length > 0 && (
+                        <div class="mb-8">
+                            <h3 class="text-lg font-semibold text-slate-200 mb-4">Tags</h3>
+                            <div class="flex flex-wrap gap-2">
+                                {post.data.tags.map((tag: string) => (
+                                    <span class="tag">#{tag}</span>
+                                ))}
                             </div>
                         </div>
-                    </div>
+                    )}
                     
                     <!-- Newsletter CTA -->
                     <div class="bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 rounded-xl p-8 text-center">
@@ -180,7 +189,7 @@ const readingTime = Math.max(1, Math.ceil((post.body?.length || 1500) / 1000));
                             Enjoyed this article?
                         </h3>
                         <p class="text-slate-400 mb-6">
-                            Subscribe to get more insights like this delivered to your inbox
+                            Subscribe to get more insights delivered to your inbox
                         </p>
                         <div class="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
                             <input 
@@ -201,16 +210,6 @@ const readingTime = Math.max(1, Math.ceil((post.body?.length || 1500) / 1000));
                 <div class="sticky top-24 space-y-8">
                     <!-- ✅ FIX: Use 'id' for sidebar -->
                     <Sidebar currentPostId={post.id} />
-                    
-                    <!-- Ad Space -->
-                    <div class="bg-slate-800/30 border-2 border-dashed border-slate-700 rounded-xl p-6 text-center">
-                        <div class="text-slate-500 mb-2">
-                            <svg class="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 2v12a1 1 0 001 1h8a1 1 0 001 1V6M9 8h6"/>
-                            </svg>
-                        </div>
-                        <p class="text-xs text-slate-500">Advertisement (300x250)</p>
-                    </div>
                 </div>
             </aside>
         </div>
@@ -224,6 +223,10 @@ const readingTime = Math.max(1, Math.ceil((post.body?.length || 1500) / 1000));
     
     .tag {
         @apply bg-slate-700 text-slate-300 px-3 py-1 rounded-full text-sm hover:bg-cyan-500 hover:text-white transition-colors cursor-pointer;
+    }
+
+    .btn-primary {
+        @apply inline-block bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:from-cyan-600 hover:to-blue-600 transition-all duration-200;
     }
 </style>
 
@@ -247,11 +250,11 @@ const readingTime = Math.max(1, Math.ceil((post.body?.length || 1500) / 1000));
                         break;
                     case 'copy':
                         navigator.clipboard.writeText(currentUrl).then(() => {
-                            // Show a temporary success message
-                            const originalContent = button.innerHTML;
-                            button.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+                            const btn = button as HTMLElement;
+                            const originalContent = btn.innerHTML;
+                            btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
                             setTimeout(() => {
-                                button.innerHTML = originalContent;
+                                btn.innerHTML = originalContent;
                             }, 2000);
                         });
                         break;

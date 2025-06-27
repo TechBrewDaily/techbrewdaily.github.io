@@ -1,0 +1,50 @@
+---
+import { getCollection } from 'astro:content';
+import MainLayout from '../../layouts/MainLayout.astro';
+import BlogPostCard from '../../components/BlogPostCard.astro';
+import { CATEGORIES } from '../../consts';
+
+export async function getStaticPaths() {
+  return CATEGORIES.map(category => ({
+    params: { slug: category.slug },
+    props: { category },
+  }));
+}
+
+const { category } = Astro.props;
+
+const allPosts = await getCollection('blog');
+
+// FIX: Filter posts by category name, handling missing categories gracefully
+const posts = allPosts.filter(post => {
+  // Handle both old and new post formats
+  const postCategory = post.data.category || 'Technology';
+  return postCategory === category.name;
+}).sort((a, b) => new Date(b.data.pubDate).valueOf() - new Date(a.data.pubDate).valueOf());
+---
+
+<MainLayout
+  title={`Posts in ${category.name}`}
+  description={category.description}
+>
+  <section class="py-12">
+    <div class="text-center mb-12">
+      <span class="text-6xl">{category.emoji}</span>
+      <h1 class="text-4xl md:text-5xl font-bold mt-4 mb-2">
+        Category: <span class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">{category.name}</span>
+      </h1>
+      <p class="text-lg text-slate-400 max-w-2xl mx-auto">{category.description}</p>
+    </div>
+
+    {posts.length > 0 ? (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {posts.map(post => <BlogPostCard post={post} />)}
+      </div>
+    ) : (
+      <div class="text-center py-16 bg-slate-800/50 rounded-xl border border-slate-700">
+        <h2 class="text-2xl font-bold text-slate-300">No Posts Yet</h2>
+        <p class="text-slate-400 mt-2">Check back soon for new articles in this category!</p>
+      </div>
+    )}
+  </section>
+</MainLayout>

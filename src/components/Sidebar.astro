@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import { CATEGORIES } from '../consts';
 
 interface Props {
     currentPostId?: string;
@@ -12,6 +13,14 @@ const recentPosts = allPosts
     .filter(p => p.id !== currentPostId)
     .sort((a, b) => new Date(b.data.pubDate).valueOf() - new Date(a.data.pubDate).valueOf())
     .slice(0, 5);
+
+// FIX: Calculate actual category counts
+const categoryCounts = CATEGORIES.map(category => {
+    const count = allPosts.filter(post => 
+        (post.data.category || 'Technology') === category.name
+    ).length;
+    return { ...category, count };
+});
 ---
 
 <div class="space-y-6">
@@ -53,7 +62,7 @@ const recentPosts = allPosts
                             {(post.data.heroImage || post.data.image) && (
                                 <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
                                     <img 
-                                        src={post.data.heroImage?.src || post.data.image?.url} 
+                                        src={typeof post.data.heroImage === 'string' ? post.data.heroImage : post.data.heroImage?.src || post.data.image?.url} 
                                         alt={post.data.title}
                                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                                     />
@@ -82,7 +91,7 @@ const recentPosts = allPosts
         </div>
     </div>
 
-    <!-- Categories -->
+    <!-- FIX: Dynamic Categories with Real Counts -->
     <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
         <h3 class="font-bold text-lg text-slate-200 mb-4 flex items-center">
             <svg class="w-5 h-5 mr-2 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,26 +100,15 @@ const recentPosts = allPosts
             Categories
         </h3>
         <div class="space-y-2">
-            <a href="#" class="category-link">
-                <span>AI & Machine Learning</span>
-                <span class="category-count">12</span>
-            </a>
-            <a href="#" class="category-link">
-                <span>Web Development</span>
-                <span class="category-count">8</span>
-            </a>
-            <a href="#" class="category-link">
-                <span>Mobile Technology</span>
-                <span class="category-count">6</span>
-            </a>
-            <a href="#" class="category-link">
-                <span>Gadget Reviews</span>
-                <span class="category-count">4</span>
-            </a>
-            <a href="#" class="category-link">
-                <span>Tech News</span>
-                <span class="category-count">15</span>
-            </a>
+            {categoryCounts.map(category => (
+                <a href={`/category/${category.slug}/`} class="category-link">
+                    <span class="flex items-center space-x-2">
+                        <span>{category.emoji}</span>
+                        <span>{category.name}</span>
+                    </span>
+                    <span class="category-count">{category.count}</span>
+                </a>
+            ))}
         </div>
     </div>
 
@@ -172,7 +170,7 @@ const recentPosts = allPosts
     }
     
     .category-link {
-        @apply flex items-center justify-between text-slate-400 hover:text-cyan-400 transition-colors duration-200 py-1;
+        @apply flex items-center justify-between text-slate-400 hover:text-cyan-400 transition-colors duration-200 py-2 px-2 hover:bg-slate-700/50 rounded-md;
     }
     
     .category-count {

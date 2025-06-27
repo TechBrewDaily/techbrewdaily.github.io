@@ -2,17 +2,26 @@
 import MainLayout from '../../layouts/MainLayout.astro';
 import { getCollection } from 'astro:content';
 import BlogPostCard from '../../components/BlogPostCard.astro';
+import { CATEGORIES } from '../../consts';
 
 const allPosts = await getCollection('blog');
 const sortedPosts = allPosts.sort(
     (a, b) => new Date(b.data.pubDate).valueOf() - new Date(a.data.pubDate).valueOf()
 );
 
-// Pagination setup (for future implementation)
+// Pagination setup
 const postsPerPage = 12;
 const totalPages = Math.ceil(sortedPosts.length / postsPerPage);
 const currentPage = 1;
 const paginatedPosts = sortedPosts.slice(0, postsPerPage);
+
+// Calculate category counts for filters
+const categoryStats = CATEGORIES.map(category => ({
+    ...category,
+    count: allPosts.filter(post => 
+        (post.data.category || 'Technology') === category.name
+    ).length
+}));
 ---
 
 <MainLayout 
@@ -38,7 +47,7 @@ const paginatedPosts = sortedPosts.slice(0, postsPerPage);
                     <div class="text-sm text-slate-400">Articles</div>
                 </div>
                 <div class="bg-slate-800/50 rounded-xl p-4 min-w-[120px]">
-                    <div class="text-2xl font-bold text-blue-400">5</div>
+                    <div class="text-2xl font-bold text-blue-400">{CATEGORIES.length}</div>
                     <div class="text-sm text-slate-400">Categories</div>
                 </div>
                 <div class="bg-slate-800/50 rounded-xl p-4 min-w-[120px]">
@@ -53,23 +62,13 @@ const paginatedPosts = sortedPosts.slice(0, postsPerPage);
     <section class="mb-12">
         <div class="flex flex-wrap gap-4 justify-center">
             <button class="filter-btn active" data-category="all">
-                All Posts
+                All Posts ({sortedPosts.length})
             </button>
-            <button class="filter-btn" data-category="ai">
-                AI & Machine Learning
-            </button>
-            <button class="filter-btn" data-category="web">
-                Web Development
-            </button>
-            <button class="filter-btn" data-category="mobile">
-                Mobile Tech
-            </button>
-            <button class="filter-btn" data-category="reviews">
-                Reviews
-            </button>
-            <button class="filter-btn" data-category="news">
-                Tech News
-            </button>
+            {categoryStats.map(category => (
+                <button class="filter-btn" data-category={category.slug}>
+                    {category.emoji} {category.name} ({category.count})
+                </button>
+            ))}
         </div>
     </section>
 
@@ -94,7 +93,12 @@ const paginatedPosts = sortedPosts.slice(0, postsPerPage);
     <section class="mb-16">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="posts-grid">
             {paginatedPosts.map((post, index) => (
-                <div class="animate-fade-in-up post-item" style={`animation-delay: ${index * 0.05}s`} data-category="all">
+                <div class="animate-fade-in-up post-item" 
+                     style={`animation-delay: ${index * 0.05}s`} 
+                     data-category="all"
+                     data-category-slug={CATEGORIES.find(c => c.name === (post.data.category || 'Technology'))?.slug || 'technology'}
+                     data-title={post.data.title.toLowerCase()}
+                     data-description={post.data.description.toLowerCase()}>
                     <BlogPostCard post={post} />
                 </div>
             ))}
@@ -173,7 +177,7 @@ const paginatedPosts = sortedPosts.slice(0, postsPerPage);
 
 <style>
     .filter-btn {
-        @apply px-4 py-2 rounded-full bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300 transition-all duration-200 border border-slate-700;
+        @apply px-4 py-2 rounded-full bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300 transition-all duration-200 border border-slate-700 text-sm;
     }
     
     .filter-btn.active {
@@ -195,7 +199,7 @@ const paginatedPosts = sortedPosts.slice(0, postsPerPage);
 </style>
 
 <script>
-    // Search functionality
+    // Search and filter functionality
     const searchInput = document.getElementById('search-input') as HTMLInputElement;
     const postsGrid = document.getElementById('posts-grid') as HTMLElement;
     const noResults = document.getElementById('no-results') as HTMLElement;
@@ -212,9 +216,14 @@ const paginatedPosts = sortedPosts.slice(0, postsPerPage);
         let visibleCount = 0;
         
         posts.forEach(post => {
-            const title = post.textContent?.toLowerCase() || '';
-            const matchesSearch = !searchTerm || title.includes(searchTerm);
-            const matchesCategory = currentFilter === 'all' || post.getAttribute('data-category') === currentFilter;
+            const title = post.getAttribute('data-title') || '';
+            const description = post.getAttribute('data-description') || '';
+            const categorySlug = post.getAttribute('data-category-slug') || '';
+            
+            const matchesSearch = !searchTerm || 
+                                title.includes(searchTerm) || 
+                                description.includes(searchTerm);
+            const matchesCategory = currentFilter === 'all' || categorySlug === currentFilter;
             
             if (matchesSearch && matchesCategory) {
                 post.style.display = 'block';
