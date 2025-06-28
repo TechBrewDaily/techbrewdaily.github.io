@@ -25,7 +25,7 @@ def write_blog_post(topic: str, category_obj: dict) -> str | None:
         # Get current date in ISO format (no quotes for date coercion)
         current_date = datetime.now().strftime('%Y-%m-%d')
         
-        # FIX: Use .svg placeholders instead of .jpg
+        # FIX: Use .svg placeholders (matching what we actually generated)
         placeholder_images = [
             "/images/blog-placeholder-1.svg",
             "/images/blog-placeholder-2.svg", 

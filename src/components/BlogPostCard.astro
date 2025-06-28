@@ -52,6 +52,11 @@ const getResolvedImageUrl = (url: string | null) => {
   // If it's already a full URL, return as is
   if (url.startsWith('http')) return url;
   
+  // Handle .jpg to .svg conversion for legacy posts
+  if (url.includes('.jpg')) {
+    url = url.replace('.jpg', '.svg');
+  }
+  
   // For local images, ensure they start with the base URL
   if (url.startsWith('/')) {
     return `${import.meta.env.BASE_URL}${url.substring(1)}`;
