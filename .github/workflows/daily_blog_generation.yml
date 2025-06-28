@@ -1,46 +1,315 @@
-name: Generate Daily Blog Posts
+name: Generate, Build, and Deploy Daily Blog
 
 on:
   schedule:
-    # Runs automatically every day at 5:00 AM UTC
-    - cron: '0 5 * * *'
+    # Runs automatically every day at 3:00 AM UTC (8:30 AM IST)
+    - cron: '0 3 * * *'
   workflow_dispatch:
+    inputs:
+      post_count:
+        description: 'Number of posts to generate (1-5)'
+        required: false
+        default: '5'
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '3'
+          - '4'
+          - '5'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "daily-blog-generation"
+  cancel-in-progress: false
 
 jobs:
-  generate-posts:
+  generate_build_deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # Required to push commits
-
     steps:
+      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
-      - name: Set up Python 3.10
+      # Step 2: Setup Python and install dependencies
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+          cache: 'pip'
 
       - name: Configure Git
         run: |
-          git config --global user.name "TechBrew Daily Bot"
-          git config --global user.email "action@github.com"
+          git config --global user.name 'TechBrew Daily Bot'
+          git config --global user.email 'action@github.com'
 
       - name: Install Python dependencies
         run: |
-          cd automated-blogging-engine
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          # Install dependencies for your automation engine
+          cd automated-blogging-engine
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            # Fallback to manual installation
+            pip install google-generativeai feedparser requests beautifulsoup4 python-frontmatter
+          fi
 
-      - name: Run Daily Generation Script
+      # Step 3: Generate blog posts using your automation engine
+      - name: Generate daily blog posts
         env:
           GEMINI_API_KEY_1: ${{ secrets.GEMINI_API_KEY_1 }}
           GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
+          POST_COUNT: ${{ github.event.inputs.post_count || '5' }}
         run: |
-          cd automated-blogging-engine
-          python scripts/daily_generation.py
+          echo "🚀 Starting blog post generation..."
+          echo "Target posts: $POST_COUNT"
+          
+          # Check if your daily generation script exists
+          if [ -f "automated-blogging-engine/scripts/daily_generation.py" ]; then
+            echo "Using existing daily generation script..."
+            cd automated-blogging-engine
+            python scripts/daily_generation.py
+          elif [ -f "autoblog_gemini.py" ]; then
+            echo "Using autoblog_gemini.py script..."
+            python autoblog_gemini.py
+          else
+            echo "Creating inline generation script..."
+            cd automated-blogging-engine
+            python3 << 'EOF'
+          import os
+          import sys
+          import random
+          from pathlib import Path
+          
+          # Add src to path if it exists
+          src_path = Path('src')
+          if src_path.exists():
+              sys.path.append(str(src_path))
+          
+          try:
+              # Try to use your existing automation structure
+              from agents.trend_spotter import TrendSpotter
+              from agents.content_writer import ContentWriter
+              from agents.publisher import Publisher
+              from utils.topic_tracker import TopicTracker
+              
+              print("✅ Using existing automation agents...")
+              
+              # Initialize components
+              trend_spotter = TrendSpotter()
+              content_writer = ContentWriter()
+              publisher = Publisher()
+              topic_tracker = TopicTracker()
+              
+              post_count = int(os.getenv('POST_COUNT', '5'))
+              successful_posts = 0
+              
+              for i in range(post_count):
+                  try:
+                      print(f"📝 Generating post {i+1}/{post_count}...")
+                      
+                      # Get trending topic
+                      topic = trend_spotter.get_trending_topic()
+                      
+                      # Check if topic was used recently
+                      if topic_tracker.is_topic_used_recently(topic):
+                          print(f"♻️ Topic '{topic}' used recently, getting alternative...")
+                          topic = trend_spotter.get_alternative_topic()
+                      
+                      # Generate content
+                      content = content_writer.write_post(topic)
+                      
+                      # Publish post
+                      success = publisher.publish_post(content, topic)
+                      
+                      if success:
+                          topic_tracker.mark_topic_used(topic)
+                          successful_posts += 1
+                          print(f"✅ Successfully generated post {i+1}: {topic}")
+                      else:
+                          print(f"❌ Failed to generate post {i+1}")
+                          
+                  except Exception as e:
+                      print(f"❌ Error generating post {i+1}: {e}")
+                      continue
+              
+              print(f"🎉 Generation completed! {successful_posts}/{post_count} posts created successfully.")
+              
+          except ImportError as e:
+              print(f"⚠️ Could not import automation agents: {e}")
+              print("🔄 Falling back to simple generation...")
+              
+              # Fallback to basic generation if agents not available
+              import google.generativeai as genai
+              import datetime
+              import re
+              
+              # Setup Gemini API
+              api_keys = [
+                  os.getenv('GEMINI_API_KEY_1'),
+                  os.getenv('GEMINI_API_KEY_2')
+              ]
+              api_keys = [key for key in api_keys if key]
+              
+              if not api_keys:
+                  print("❌ No Gemini API keys found!")
+                  sys.exit(1)
+              
+              # Use random API key
+              genai.configure(api_key=random.choice(api_keys))
+              model = genai.GenerativeModel('gemini-1.5-flash')
+              
+              # Simple topics for fallback
+              topics = [
+                  "Latest AI developments in 2025",
+                  "Smart home automation trends",
+                  "Mobile app development best practices",
+                  "Cybersecurity for remote workers",
+                  "Future of electric vehicles"
+              ]
+              
+              post_count = int(os.getenv('POST_COUNT', '5'))
+              blog_dir = Path('../src/content/blog')
+              blog_dir.mkdir(parents=True, exist_ok=True)
+              
+              for i in range(min(post_count, len(topics))):
+                  topic = topics[i]
+                  try:
+                      prompt = f"""
+                      Write a comprehensive blog post about: {topic}
+                      
+                      Include:
+                      - Engaging title
+                      - 800-1200 words
+                      - Clear sections with headings
+                      - Practical insights
+                      - Current trends and examples
+                      
+                      Format as markdown with frontmatter.
+                      """
+                      
+                      response = model.generate_content(prompt)
+                      content = response.text
+                      
+                      # Create filename
+                      filename = re.sub(r'[^a-zA-Z0-9\s-]', '', topic.lower())
+                      filename = re.sub(r'\s+', '-', filename)
+                      filename = f"{filename}-{datetime.datetime.now().strftime('%Y%m%d')}.md"
+                      
+                      # Write file
+                      with open(blog_dir / filename, 'w', encoding='utf-8') as f:
+                          f.write(content)
+                      
+                      print(f"✅ Generated fallback post: {filename}")
+                      
+                  except Exception as e:
+                      print(f"❌ Error in fallback generation: {e}")
+              
+              print("🎉 Fallback generation completed!")
+          
+          EOF
+          fi
 
-      - name: Verify changes
-        run: git status
+      # Step 4: Check if new posts were generated
+      - name: Check for new content
+        id: check_content
+        run: |
+          if git diff --quiet HEAD -- src/content/blog/ used_topics.txt 2>/dev/null || git diff --quiet HEAD -- src/content/blog/ 2>/dev/null; then
+            echo "new_content=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No new content generated"
+          else
+            echo "new_content=true" >> $GITHUB_OUTPUT
+            echo "✅ New content detected"
+            echo "📄 Files changed:"
+            git diff --name-only HEAD -- src/content/blog/ used_topics.txt 2>/dev/null || git diff --name-only HEAD -- src/content/blog/ 2>/dev/null
+          fi
+
+      # Step 5: Setup Node.js and build (only if new content exists)
+      - name: Setup Node.js
+        if: steps.check_content.outputs.new_content == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install pnpm
+        if: steps.check_content.outputs.new_content == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install Node.js dependencies
+        if: steps.check_content.outputs.new_content == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Astro site
+        if: steps.check_content.outputs.new_content == 'true'
+        run: |
+          echo "🏗️ Building Astro site..."
+          pnpm run build
+          echo "✅ Build completed successfully!"
+
+      # Step 6: Commit and push changes (only if build successful)
+      - name: Commit and push new content
+        if: steps.check_content.outputs.new_content == 'true'
+        run: |
+          echo "📝 Committing new blog posts..."
+          git add src/content/blog/ used_topics.txt 2>/dev/null || git add src/content/blog/
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "ℹ️ No changes to commit"
+          else
+            # Count new posts
+            NEW_POSTS=$(git diff --name-only --cached | grep "src/content/blog/" | wc -l)
+            git commit -m "🤖 Auto-generated $NEW_POSTS daily blog post(s) - $(date +'%Y-%m-%d')"
+            
+            echo "🚀 Pushing changes to repository..."
+            git push
+            echo "✅ Successfully pushed $NEW_POSTS new post(s)!"
+          fi
+
+      # Step 7: Deploy to GitHub Pages (only if new content exists)
+      - name: Setup Pages
+        if: steps.check_content.outputs.new_content == 'true'
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        if: steps.check_content.outputs.new_content == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+      - name: Deploy to GitHub Pages
+        if: steps.check_content.outputs.new_content == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      # Step 8: Create summary
+      - name: Create deployment summary
+        if: steps.check_content.outputs.new_content == 'true'
+        run: |
+          echo "## 🚀 Daily Blog Generation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Date**: $(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target Posts**: ${{ github.event.inputs.post_count || '5' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ✅ Successfully generated and deployed" >> $GITHUB_STEP_SUMMARY
+          echo "- **Site URL**: ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📝 New Posts Added:" >> $GITHUB_STEP_SUMMARY
+          git diff --name-only HEAD~1 HEAD -- src/content/blog/ | sed 's/src\/content\/blog\///g' | sed 's/\.md$//g' | head -10 >> $GITHUB_STEP_SUMMARY
+
+      - name: No content summary
+        if: steps.check_content.outputs.new_content == 'false'
+        run: |
+          echo "## ℹ️ Daily Blog Generation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Date**: $(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: No new content generated" >> $GITHUB_STEP_SUMMARY
+          echo "- **Reason**: Content generation may have failed or no suitable topics found" >> $GITHUB_STEP_SUMMARY
