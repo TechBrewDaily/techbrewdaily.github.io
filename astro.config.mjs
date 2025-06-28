@@ -1,17 +1,25 @@
-
 import { defineConfig } from 'astro/config';
 import tailwind from "@astrojs/tailwind";
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://techbrewdaily.github.io',
-  // IMPORTANT: The base must be '/' for an <org>.github.io repository
-  base: '/',
+  site: 'https://jainhardik06.github.io',
+  base: '/astro-blog-techbrewdaily',
   integrations: [
     tailwind({
-      // This disables the default base styles from Astro's integration
-      // so your own tailwind styles take full control.
       applyBaseStyles: false,
-      }),
-    ],
+    }),
+  ],
+  // Optimize for static deployment
+  output: 'static',
+  // Add image optimization
+  image: {
+    service: {
+      entrypoint: 'astro/assets/services/sharp',
+    },
+  },
+  // Ensure proper static file handling
+  vite: {
+    assetsInclude: ['**/*.jpg', '**/*.jpeg', '**/*.png', '**/*.gif', '**/*.svg', '**/*.webp']
+  }
 });

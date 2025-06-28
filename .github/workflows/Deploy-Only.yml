@@ -1,0 +1,143 @@
+name: Deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual deployment'
+        required: false
+        default: 'Manual deployment of latest changes'
+  push:
+    branches: [main]
+    paths: 
+      - 'src/**'
+      - 'public/**'
+      - 'astro.config.mjs'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages-deploy"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate placeholder images
+        run: |
+          echo "🖼️ Generating placeholder images..."
+          
+          # Create images directory if it doesn't exist
+          mkdir -p public/images
+          
+          # Run the placeholder generation script
+          if [ -f "generate-placeholders.js" ]; then
+            node generate-placeholders.js
+          else
+            # Inline generation if script doesn't exist
+            cat > temp_generate.mjs << 'EOF'
+          import fs from 'fs';
+          import path from 'path';
+          import { fileURLToPath } from 'url';
+          
+          const __filename = fileURLToPath(import.meta.url);
+          const __dirname = path.dirname(__filename);
+          
+          const publicDir = path.join(__dirname, 'public', 'images');
+          
+          if (!fs.existsSync(publicDir)) {
+              fs.mkdirSync(publicDir, { recursive: true });
+          }
+          
+          const generatePlaceholder = (width, height, text, filename) => {
+              const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                      <linearGradient id="grad${filename}" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
+                          <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+                      </linearGradient>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#grad${filename})"/>
+                  <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="24" fill="white" text-anchor="middle" dominant-baseline="middle">${text}</text>
+              </svg>`;
+              
+              fs.writeFileSync(path.join(publicDir, `${filename}.svg`), svg);
+              console.log(`Generated ${filename}.svg`);
+          };
+          
+          generatePlaceholder(800, 400, 'TechBrew Daily', 'blog-placeholder-1');
+          generatePlaceholder(800, 400, 'Technology', 'blog-placeholder-2');
+          generatePlaceholder(800, 400, 'AI & Innovation', 'blog-placeholder-3');
+          generatePlaceholder(800, 400, 'Smart Tech', 'blog-placeholder-4');
+          generatePlaceholder(800, 400, 'Digital Trends', 'blog-placeholder-5');
+          generatePlaceholder(800, 400, 'Tech News', 'placeholder');
+          generatePlaceholder(1200, 630, 'TechBrew Daily', 'og-default');
+          
+          console.log('All placeholder images generated successfully!');
+          EOF
+          
+            node temp_generate.mjs
+            rm temp_generate.mjs
+          fi
+          
+          echo "📁 Generated files:"
+          ls -la public/images/ || echo "No images directory found"
+
+      - name: Build Astro site
+        run: |
+          echo "🏗️ Building Astro site..."
+          pnpm run build
+          echo "✅ Build completed!"
+          
+          echo "📁 Build output:"
+          ls -la dist/ || echo "No dist directory found"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Deployment Summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time**: $(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Reason**: ${{ github.event.inputs.reason || 'Push to main branch' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Site URL**: ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ✅ Successfully deployed!" >> $GITHUB_STEP_SUMMARY
