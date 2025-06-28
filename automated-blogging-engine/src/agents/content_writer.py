@@ -6,7 +6,7 @@ import re
 import random
 
 def write_blog_post(topic: str, category_obj: dict) -> str | None:
-    """Generates a full blog post with frontmatter (no image placeholders)."""
+    """Generates a full blog post with frontmatter (with proper image paths)."""
     print(f"✍️  Writing post for '{topic}'...")
     
     try:
@@ -25,14 +25,14 @@ def write_blog_post(topic: str, category_obj: dict) -> str | None:
         # Get current date in ISO format (no quotes for date coercion)
         current_date = datetime.now().strftime('%Y-%m-%d')
         
-        # Randomly select a placeholder image from available ones
+        # FIX: Use .svg placeholders instead of .jpg
         placeholder_images = [
-            "/images/blog-placeholder-1.jpg",
-            "/images/blog-placeholder-2.jpg", 
-            "/images/blog-placeholder-3.jpg",
-            "/images/blog-placeholder-4.jpg",
-            "/images/blog-placeholder-5.jpg",
-            "/images/placeholder.jpg"
+            "/images/blog-placeholder-1.svg",
+            "/images/blog-placeholder-2.svg", 
+            "/images/blog-placeholder-3.svg",
+            "/images/blog-placeholder-4.svg",
+            "/images/blog-placeholder-5.svg",
+            "/images/placeholder.svg"
         ]
         selected_image = random.choice(placeholder_images)
         

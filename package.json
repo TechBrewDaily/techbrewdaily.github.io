@@ -7,7 +7,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "generate-images": "node generate-placeholders.js"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
