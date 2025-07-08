@@ -7,7 +7,7 @@ const currentYear = new Date().getFullYear();
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             <!-- Brand Section -->
             <div class="lg:col-span-2">
-                <a href="/" class="flex items-center space-x-2 mb-4">
+                <a href={`${import.meta.env.BASE_URL}`} class="flex items-center space-x-2 mb-4">
                     <div class="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
                         <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
                     </div>
@@ -20,9 +20,9 @@ const currentYear = new Date().getFullYear();
             <div>
                 <h3 class="text-slate-200 font-semibold mb-4">Quick Links</h3>
                 <ul class="space-y-3">
-                    <li><a href="/" class="footer-link">Home</a></li>
-                    <li><a href="/blog/" class="footer-link">All Articles</a></li>
-                    <li><a href="/about/" class="footer-link">About Us</a></li>
+                    <li><a href={`${import.meta.env.BASE_URL}`} class="footer-link">Home</a></li>
+                    <li><a href={`${import.meta.env.BASE_URL}/blog/`} class="footer-link">All Articles</a></li>
+                    <li><a href={`${import.meta.env.BASE_URL}/about/`} class="footer-link">About Us</a></li>
                 </ul>
             </div>
             
@@ -31,7 +31,7 @@ const currentYear = new Date().getFullYear();
                 <h3 class="text-slate-200 font-semibold mb-4">Categories</h3>
                 <ul class="space-y-3">
                     {CATEGORIES.map(cat => (
-                        <li><a href={`/category/${cat.slug}`} class="footer-link">{cat.name}</a></li>
+                        <li><a href={`${import.meta.env.BASE_URL}/category/${cat.slug}/`} class="footer-link">{cat.name}</a></li>
                     ))}
                 </ul>
             </div>

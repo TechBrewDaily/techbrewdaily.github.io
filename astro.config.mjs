@@ -10,15 +10,12 @@ export default defineConfig({
       applyBaseStyles: false,
     }),
   ],
-  // Optimize for static deployment
   output: 'static',
-  // Add image optimization
   image: {
     service: {
       entrypoint: 'astro/assets/services/sharp',
     },
   },
-  // Ensure proper static file handling
   vite: {
     assetsInclude: ['**/*.jpg', '**/*.jpeg', '**/*.png', '**/*.gif', '**/*.svg', '**/*.webp']
   }

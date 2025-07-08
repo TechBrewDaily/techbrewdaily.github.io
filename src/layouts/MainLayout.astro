@@ -13,7 +13,7 @@ const { title, description, image } = Astro.props;
 const siteTitle = "TechBrew Daily";
 const fullTitle = `${title} | ${siteTitle}`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const defaultImage = `${Astro.site}images/og-default.jpg`;
+const defaultImage = `${Astro.site}${import.meta.env.BASE_URL}images/og-default.jpg`;
 
 // Only load analytics in production
 const isProd = import.meta.env.PROD;
@@ -51,7 +51,7 @@ const isProd = import.meta.env.PROD;
         <meta property="twitter:image" content={image || defaultImage} />
         
         <!-- RSS Feed -->
-        <link rel="alternate" type="application/rss+xml" title={siteTitle} href={`${Astro.site}rss.xml`} />
+        <link rel="alternate" type="application/rss+xml" title={siteTitle} href={`${Astro.site}${import.meta.env.BASE_URL}rss.xml`} />
         
         <!-- Preload fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">

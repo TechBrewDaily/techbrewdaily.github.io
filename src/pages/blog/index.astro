@@ -116,24 +116,32 @@ const categoryStats = CATEGORIES.map(category => ({
 
     <!-- Pagination -->
     {totalPages > 1 && (
-        <section class="text-center">
+        <section class="text-center" id="pagination-section">
             <nav class="inline-flex items-center space-x-2">
-                <button class="px-4 py-2 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 hover:text-slate-300 transition-colors disabled:opacity-50" disabled>
+                <button id="prev-btn" class="btn-pagination" disabled>
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
                     Previous
                 </button>
                 
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map(page => (
-                    <button class={`px-4 py-2 rounded-lg transition-colors ${
-                        page === currentPage 
-                            ? 'bg-cyan-500 text-white' 
-                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-300'
-                    }`}>
-                        {page}
-                    </button>
-                ))}
+                <div id="page-numbers" class="flex items-center space-x-2">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map(page => (
+                        <button class={`btn-pagination page-btn ${
+                            page === currentPage 
+                                ? 'active' 
+                                : ''
+                        }`} data-page={page}>
+                            {page}
+                        </button>
+                    ))}
+                </div>
                 
-                <button class="px-4 py-2 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 hover:text-slate-300 transition-colors">
+                <button id="next-btn" class="btn-pagination">
                     Next
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
                 </button>
             </nav>
         </section>
@@ -184,6 +192,32 @@ const categoryStats = CATEGORIES.map(category => ({
         @apply bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-transparent;
     }
     
+    .btn-pagination {
+        @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 inline-flex items-center;
+        background: var(--bg-card);
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+    }
+    
+    .btn-pagination:hover:not(:disabled) {
+        background: var(--bg-card-hover);
+        color: var(--text-primary);
+        border-color: var(--accent);
+        transform: translateY(-1px);
+    }
+    
+    .btn-pagination.active {
+        background: var(--gradient-primary);
+        color: white;
+        border-color: transparent;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .btn-pagination:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
     .animate-fade-in-up {
         opacity: 0;
         transform: translateY(20px);
@@ -205,17 +239,30 @@ const categoryStats = CATEGORIES.map(category => ({
     const noResults = document.getElementById('no-results') as HTMLElement;
     const filterButtons = document.querySelectorAll('.filter-btn') as NodeListOf<HTMLButtonElement>;
     
+    // Pagination elements
+    const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement;
+    const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
+    const pageButtons = document.querySelectorAll('.page-btn') as NodeListOf<HTMLButtonElement>;
+    
     let currentFilter = 'all';
+    let currentPage = 1;
+    const postsPerPage = 12;
+    let filteredPosts: HTMLElement[] = [];
+    
+    // Get all posts
+    function getAllPosts(): HTMLElement[] {
+        return Array.from(postsGrid.querySelectorAll('.post-item')) as HTMLElement[];
+    }
     
     // Filter posts function
     function filterPosts() {
         if (!searchInput || !postsGrid || !noResults) return;
         
         const searchTerm = searchInput.value.toLowerCase();
-        const posts = postsGrid.querySelectorAll('.post-item') as NodeListOf<HTMLElement>;
-        let visibleCount = 0;
+        const allPosts = getAllPosts();
+        filteredPosts = [];
         
-        posts.forEach(post => {
+        allPosts.forEach(post => {
             const title = post.getAttribute('data-title') || '';
             const description = post.getAttribute('data-description') || '';
             const categorySlug = post.getAttribute('data-category-slug') || '';
@@ -226,22 +273,64 @@ const categoryStats = CATEGORIES.map(category => ({
             const matchesCategory = currentFilter === 'all' || categorySlug === currentFilter;
             
             if (matchesSearch && matchesCategory) {
-                post.style.display = 'block';
-                visibleCount++;
-            } else {
-                post.style.display = 'none';
+                filteredPosts.push(post);
             }
         });
         
+        // Reset to first page when filtering
+        currentPage = 1;
+        updatePagination();
+        showCurrentPage();
+    }
+    
+    // Show current page posts
+    function showCurrentPage() {
+        const allPosts = getAllPosts();
+        const startIndex = (currentPage - 1) * postsPerPage;
+        const endIndex = startIndex + postsPerPage;
+        
+        // Hide all posts first
+        allPosts.forEach(post => {
+            post.style.display = 'none';
+        });
+        
+        // Show only current page posts
+        const currentPagePosts = filteredPosts.slice(startIndex, endIndex);
+        currentPagePosts.forEach(post => {
+            post.style.display = 'block';
+        });
+        
         // Show/hide no results message
-        if (visibleCount === 0) {
+        if (filteredPosts.length === 0) {
             noResults.classList.remove('hidden');
         } else {
             noResults.classList.add('hidden');
         }
     }
     
-    // Search input handler
+    // Update pagination controls
+    function updatePagination() {
+        const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+        
+        // Update previous button
+        if (prevBtn) {
+            prevBtn.disabled = currentPage === 1;
+        }
+        
+        // Update next button
+        if (nextBtn) {
+            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+        }
+        
+        // Update page buttons
+        pageButtons.forEach(btn => {
+            const page = parseInt(btn.getAttribute('data-page') || '1');
+            btn.classList.toggle('active', page === currentPage);
+            btn.style.display = page <= totalPages ? 'inline-flex' : 'none';
+        });
+    }
+    
+    // Event listeners
     searchInput?.addEventListener('input', filterPosts);
     
     // Filter button handlers
@@ -257,5 +346,37 @@ const categoryStats = CATEGORIES.map(category => ({
             // Filter posts
             filterPosts();
         });
+    });
+    
+    // Pagination handlers
+    prevBtn?.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            updatePagination();
+            showCurrentPage();
+        }
+    });
+    
+    nextBtn?.addEventListener('click', () => {
+        const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            updatePagination();
+            showCurrentPage();
+        }
+    });
+    
+    pageButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const page = parseInt(btn.getAttribute('data-page') || '1');
+            currentPage = page;
+            updatePagination();
+            showCurrentPage();
+        });
+    });
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        filterPosts(); // Initialize with all posts
     });
 </script>

@@ -18,10 +18,10 @@ const formattedDate = post.data.pubDate.toLocaleDateString('en-US', {
 // Calculate reading time (rough estimate)
 const readingTime = Math.max(1, Math.ceil((post.body?.length || 1500) / 1000));
 
-// Use 'id' instead of 'slug' (Astro collections use 'id')
-const postUrl = `/blog/${post.id}/`;
+// FIX: Use simple URL construction without base URL duplication
+const postUrl = `${import.meta.env.BASE_URL}/blog/${post.id}/`;
 
-// FIX: Handle category safely with better defaults
+// Handle category safely with better defaults
 const categoryName = post.data.category || 'Technology';
 const categoryEmoji = getCategoryEmoji(categoryName);
 
@@ -39,13 +39,13 @@ function getCategoryEmoji(category: string): string {
   return emojiMap[category] || '📱';
 }
 
-// FIX: Handle image sources more robustly with proper error checking
+// FIX: Handle image sources with proper URL resolution
 const imageUrl = post.data.image?.url || 
                  (typeof post.data.heroImage === 'string' ? post.data.heroImage : post.data.heroImage?.src) || 
                  null;
 const imageAlt = post.data.image?.alt || post.data.title;
 
-// FIX: Ensure image URLs are properly resolved for GitHub Pages
+// FIX: Simple image URL resolution
 const getResolvedImageUrl = (url: string | null) => {
   if (!url) return null;
   
@@ -57,11 +57,12 @@ const getResolvedImageUrl = (url: string | null) => {
     url = url.replace('.jpg', '.svg');
   }
   
-  // For local images, ensure they start with the base URL
-  if (url.startsWith('/')) {
+  // For local images starting with /images/, add base URL
+  if (url.startsWith('/images/')) {
     return `${import.meta.env.BASE_URL}${url.substring(1)}`;
   }
   
+  // For other local images, use them as-is (Astro will handle the base path)
   return url;
 };
 
@@ -75,7 +76,7 @@ const resolvedImageUrl = getResolvedImageUrl(imageUrl);
 } shadow-lg hover:shadow-xl hover:shadow-cyan-500/10`}>
   <a href={postUrl} class="block" aria-label={`Read article: ${post.data.title}`}>
     
-    <!-- FIX: Image Container with Better Error Handling -->
+    <!-- Image Container with Better Error Handling -->
     <div class={`relative overflow-hidden ${featured ? 'h-64 lg:h-80' : 'h-48'}`}>
       {resolvedImageUrl ? (
         <!-- Real Image with Error Fallback -->
@@ -92,7 +93,7 @@ const resolvedImageUrl = getResolvedImageUrl(imageUrl);
       ) : null}
       
       <!-- Enhanced CSS Fallback Placeholder (always present as fallback) -->
-      <div class={`w-full h-full bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center relative overflow-hidden ${resolvedImageUrl ? 'hidden' : 'flex'}`} style="display: flex;">
+      <div class={`w-full h-full bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center relative overflow-hidden ${resolvedImageUrl ? 'hidden' : 'flex'}`}>
         <!-- Tech Pattern Background -->
         <div class="absolute inset-0 opacity-10">
           <svg class="w-full h-full" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
