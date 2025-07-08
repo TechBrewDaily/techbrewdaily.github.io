@@ -19,7 +19,7 @@ const formattedDate = post.data.pubDate.toLocaleDateString('en-US', {
 const readingTime = Math.max(1, Math.ceil((post.body?.length || 1500) / 1000));
 
 // FIX: Use simple URL construction without base URL duplication
-const postUrl = `${import.meta.env.BASE_URL}/blog/${post.id}/`;
+const postUrl = `/blog/${post.id}/`;
 
 // Handle category safely with better defaults
 const categoryName = post.data.category || 'Technology';
@@ -57,9 +57,9 @@ const getResolvedImageUrl = (url: string | null) => {
     url = url.replace('.jpg', '.svg');
   }
   
-  // For local images starting with /images/, add base URL
+  // For local images starting with /images/, return as-is for root deployment
   if (url.startsWith('/images/')) {
-    return `${import.meta.env.BASE_URL}${url.substring(1)}`;
+    return url;
   }
   
   // For other local images, use them as-is (Astro will handle the base path)

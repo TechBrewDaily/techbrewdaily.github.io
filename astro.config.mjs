@@ -4,8 +4,8 @@ import sitemap from "@astrojs/sitemap";
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://jainhardik06.github.io',
-  base: '/astro-blog-techbrewdaily',
+  site: 'https://techbrewdaily.github.io',
+  base: '/',
   integrations: [
     tailwind({
       applyBaseStyles: false,

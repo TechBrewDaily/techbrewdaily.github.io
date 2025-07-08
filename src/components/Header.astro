@@ -8,7 +8,7 @@ const currentPath = Astro.url.pathname;
         <div class="flex justify-between items-center h-16">
             <!-- Logo -->
             <div class="flex items-center">
-                <a href={`${import.meta.env.BASE_URL}`} class="flex items-center space-x-2 group">
+                <a href="/" class="flex items-center space-x-2 group">
                     <div class="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                         <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
                     </div>
@@ -20,8 +20,8 @@ const currentPath = Astro.url.pathname;
 
             <!-- Desktop Navigation Links -->
             <div class="hidden md:flex items-center space-x-8">
-                <a href={`${import.meta.env.BASE_URL}`} class={`nav-link ${currentPath === '/' ? 'active' : ''}`}>Home</a>
-                <a href={`${import.meta.env.BASE_URL}/blog/`} class={`nav-link ${currentPath.startsWith('/blog') ? 'active' : ''}`}>Blog</a>
+                <a href="/" class={`nav-link ${currentPath === '/' ? 'active' : ''}`}>Home</a>
+                <a href="/blog/" class={`nav-link ${currentPath.startsWith('/blog') ? 'active' : ''}`}>Blog</a>
                 <div class="relative group">
                     <button class={`nav-link flex items-center space-x-1 ${currentPath.startsWith('/category') ? 'active' : ''}`}>
                         <span>Categories</span>
@@ -30,7 +30,7 @@ const currentPath = Astro.url.pathname;
                     <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-slate-800 rounded-lg shadow-xl border border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                         <div class="p-2">
                             {CATEGORIES.map(cat => (
-                                <a href={`${import.meta.env.BASE_URL}/category/${cat.slug}/`} class="flex items-center space-x-3 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-cyan-400 transition-colors rounded-md">
+                                <a href={`/category/${cat.slug}/`} class="flex items-center space-x-3 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-cyan-400 transition-colors rounded-md">
                                     <span class="text-lg">{cat.emoji}</span>
                                     <span>{cat.name}</span>
                                 </a>
@@ -38,7 +38,7 @@ const currentPath = Astro.url.pathname;
                         </div>
                     </div>
                 </div>
-                <a href={`${import.meta.env.BASE_URL}/about/`} class={`nav-link ${currentPath === '/about/' ? 'active' : ''}`}>About</a>
+                <a href="/about/" class={`nav-link ${currentPath === '/about/' ? 'active' : ''}`}>About</a>
             </div>
 
             <!-- Actions -->
@@ -53,14 +53,14 @@ const currentPath = Astro.url.pathname;
         <!-- Mobile Menu -->
         <div class="md:hidden hidden" id="mobile-menu">
             <div class="px-2 pt-2 pb-3 space-y-1 border-t border-slate-800">
-                <a href={`${import.meta.env.BASE_URL}`} class="mobile-nav-link">Home</a>
-                <a href={`${import.meta.env.BASE_URL}/blog/`} class="mobile-nav-link">Blog</a>
-                <a href={`${import.meta.env.BASE_URL}/about/`} class="mobile-nav-link">About</a>
+                <a href="/" class="mobile-nav-link">Home</a>
+                <a href="/blog/" class="mobile-nav-link">Blog</a>
+                <a href="/about/" class="mobile-nav-link">About</a>
                 <div class="px-3 py-2">
                     <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Categories</p>
                     <div class="mt-2 space-y-1">
                         {CATEGORIES.map(cat => (
-                            <a href={`${import.meta.env.BASE_URL}/category/${cat.slug}/`} class="flex items-center space-x-3 text-sm text-slate-400 hover:text-cyan-400 p-2 hover:bg-slate-800 rounded-md">
+                            <a href={`/category/${cat.slug}/`} class="flex items-center space-x-3 text-sm text-slate-400 hover:text-cyan-400 p-2 hover:bg-slate-800 rounded-md">
                                 <span class="text-lg">{cat.emoji}</span>
                                 <span>{cat.name}</span>
                             </a>

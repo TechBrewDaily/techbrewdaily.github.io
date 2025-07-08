@@ -12,7 +12,7 @@ Allow: /sitemap-index.xml
 Allow: /sitemap-0.xml
 
 # Sitemap location
-Sitemap: https://jainhardik06.github.io/astro-blog-techbrewdaily/sitemap-index.xml
+Sitemap: https://techbrewdaily.github.io/sitemap-index.xml
 
 # Crawl delay (optional, helps prevent server overload)
 Crawl-delay: 1
