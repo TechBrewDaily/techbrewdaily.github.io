@@ -41,6 +41,23 @@ const { title, description, image = FallbackImage } = Astro.props;
 <title>{title}</title>
 <meta name="title" content={title} />
 <meta name="description" content={description} />
+<meta name="author" content="TechBrew Daily" />
+<meta name="robots" content="index, follow" />
+<meta name="language" content="English" />
+<meta name="revisit-after" content="7 days" />
+
+<!-- Additional SEO Meta Tags -->
+<meta name="theme-color" content="#0891b2" />
+<meta name="msapplication-TileColor" content="#0891b2" />
+<meta name="application-name" content={SITE_TITLE} />
+
+<!-- Geographic Targeting -->
+<meta name="geo.region" content="IN" />
+<meta name="geo.country" content="India" />
+
+<!-- Content Categories -->
+<meta name="category" content="Technology" />
+<meta name="news_keywords" content="technology, AI, startups, India, innovation, tech news" />
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website" />
@@ -48,6 +65,8 @@ const { title, description, image = FallbackImage } = Astro.props;
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:image" content={new URL(image.src, Astro.url)} />
+<meta property="og:site_name" content={SITE_TITLE} />
+<meta property="og:locale" content="en_US" />
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
@@ -55,3 +74,29 @@ const { title, description, image = FallbackImage } = Astro.props;
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image.src, Astro.url)} />
+<meta property="twitter:site" content="@TechBrewDaily" />
+<meta property="twitter:creator" content="@TechBrewDaily" />
+
+<!-- Additional Schema.org for Blog Posts -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "TechBrew Daily",
+  "description": "Latest technology news, AI insights, and startup stories from India",
+  "url": "https://jainhardik06.github.io/astro-blog-techbrewdaily/",
+  "publisher": {
+    "@type": "Organization",
+    "name": "TechBrew Daily",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://jainhardik06.github.io/astro-blog-techbrewdaily/favicon.svg"
+    }
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://jainhardik06.github.io/astro-blog-techbrewdaily/blog/?search={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
