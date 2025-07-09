@@ -30,6 +30,9 @@ const { title, description, image = FallbackImage } = Astro.props;
 />
 <meta name="generator" content={Astro.generator} />
 
+<!-- Google Search Console Verification (placeholder) -->
+<meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE" />
+
 <!-- Font preloads -->
 <link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin />
 <link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin />
@@ -42,12 +45,26 @@ const { title, description, image = FallbackImage } = Astro.props;
 <meta name="title" content={title} />
 <meta name="description" content={description} />
 <meta name="author" content="TechBrew Daily" />
-<meta name="robots" content="index, follow" />
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
 <meta name="language" content="English" />
-<meta name="revisit-after" content="7 days" />
+<meta name="revisit-after" content="1 days" />
+<meta name="rating" content="general" />
+
+<!-- Geographic and Language Meta Tags -->
+<meta name="geo.region" content="IN" />
+<meta name="geo.country" content="India" />
+<meta name="geo.placename" content="India" />
+<meta name="DC.language" content="en" />
 
 <!-- Additional SEO Meta Tags -->
 <meta name="theme-color" content="#0891b2" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<!-- Google and Bing specific -->
+<meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+<meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
 <meta name="msapplication-TileColor" content="#0891b2" />
 <meta name="application-name" content={SITE_TITLE} />
 
