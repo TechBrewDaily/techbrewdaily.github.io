@@ -1,3 +1,4 @@
+github token - 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
 # Astro Starter Kit: Blog
 
 ```sh
